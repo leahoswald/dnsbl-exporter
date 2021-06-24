@@ -42,9 +42,9 @@ func NewMetricsCollector() *MetricsCollector {
 			Namespace: "dnsbl",
 			Subsystem: "metrics",
 			Name:      "listed_times",
-			Help:      "Number of times the domain listed on blacklists",
+			Help:      "Number of times the domain listed on blocklists",
 		},
-		[]string{"domain", "blacklist"},
+		[]string{"domain", "blocklist"},
 	)
 	scrapesTotalMetric := prometheus.NewCounter(
 		prometheus.CounterOpts{
@@ -138,20 +138,20 @@ func (c *MetricsCollector) Collect(ch chan<- prometheus.Metric) {
 
 func (c *MetricsCollector) reportMetrics(ch chan<- prometheus.Metric) error {
 	var begun = time.Now()
-	log.Printf("Started checking %s against %d blacklists", yamlConfig.Domains, len(yamlConfig.Lists))
+	log.Printf("Started checking %s against %d blocklists", yamlConfig.Domains, len(yamlConfig.Lists))
 	for _, domain := range yamlConfig.Domains {
 		for _, bl := range yamlConfig.Lists {
 			res := Result{}
 			query(bl, domain, &res)
 			if res.Listed {
-				c.domainTimesListedMetric.With(prometheus.Labels{"domain": domain, "blacklist": bl}).Set(1)
+				c.domainTimesListedMetric.With(prometheus.Labels{"domain": domain, "blocklist": bl}).Set(1)
 			} else {
-				c.domainTimesListedMetric.With(prometheus.Labels{"domain": domain, "blacklist": bl}).Set(0)
+				c.domainTimesListedMetric.With(prometheus.Labels{"domain": domain, "blocklist": bl}).Set(0)
 			}
 		}
 	}
 	c.domainTimesListedMetric.Collect(ch)
-	log.Printf("Finished checking %s against %d blacklists in %f seconds", yamlConfig.Domains, len(yamlConfig.Lists), time.Since(begun).Seconds())
+	log.Printf("Finished checking %s against %d blocklists in %f seconds", yamlConfig.Domains, len(yamlConfig.Lists), time.Since(begun).Seconds())
 	return nil
 }
 
