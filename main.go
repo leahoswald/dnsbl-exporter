@@ -36,6 +36,7 @@ func main() {
 	}
 	metricsCollector := NewMetricsCollector()
 	prometheus.MustRegister(metricsCollector)
+	prometheus.Unregister(prometheus.NewGoCollector()) // Disable go metrics in output
 	http.Handle("/metrics", promhttp.Handler())
 
 	log.Fatal(http.ListenAndServe(*addr, nil))
